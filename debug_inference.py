@@ -30,12 +30,15 @@ t_img = img_ny_batch.flatten(0,1).permute(0,3,1,2)
 print(f"\nt_img shape after flatten & permute: {t_img.shape}")
 print(f"t_img range: [{t_img.min():.2f}, {t_img.max():.2f}]")
 
-img_patches = nn.Unfold(args.R, stride=args.stride)(t_img).view(2, 3, args.R, args.R, -1, -1)
+# Calculate number of patches
+H, W = t_img.shape[2], t_img.shape[3]
+H_patches = (H - args.R) // args.stride + 1
+W_patches = (W - args.R) // args.stride + 1
+print(f"Calculated patches: H_patches={H_patches}, W_patches={W_patches}")
+
+img_patches = nn.Unfold(args.R, stride=args.stride)(t_img).view(2, 3, args.R, args.R, H_patches, W_patches)
 print(f"img_patches shape: {img_patches.shape}")
 print(f"img_patches range: [{img_patches.min():.2f}, {img_patches.max():.2f}]")
-
-H_patches = img_patches.shape[4]
-W_patches = img_patches.shape[5]
 print(f"Number of patches: H={H_patches}, W={W_patches}, Total={H_patches*W_patches}")
 
 vec = img_patches.permute(0,4,5,1,2,3).reshape(2 * H_patches * W_patches, 3, args.R, args.R)
